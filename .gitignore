@@ -1,0 +1,7 @@
+dist/
+.idea/
+node_modules/
+out/
+#The parser is automatically generated
+src/parser/
+*.vsix
