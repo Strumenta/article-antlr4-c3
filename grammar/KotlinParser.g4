@@ -354,8 +354,11 @@ prefixUnaryExpression
     ;
 
 postfixUnaryExpression
-    : (atomicExpression | callableReference) postfixUnaryOperation*
+    : variableRead postfixUnaryOperation*
+    | (atomicExpression | callableReference) (postfixUnaryOperation | callSuffix)*
     ;
+
+variableRead: simpleIdentifier;
 
 atomicExpression
     : parenthesizedExpression
@@ -624,7 +627,6 @@ prefixUnaryOperation
 
 postfixUnaryOperation
     : INCR | DECR | EXCL EXCL
-    | callSuffix
     | arrayAccess
     | NL* memberAccessOperator postfixUnaryExpression
     ;

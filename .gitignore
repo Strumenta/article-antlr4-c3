@@ -1,5 +1,7 @@
 dist/
 .idea/
+gen/
+grammar/KotlinLexer.tokens
 node_modules/
 out/
 #The parser is automatically generated
