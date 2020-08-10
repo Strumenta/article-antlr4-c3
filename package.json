@@ -19,7 +19,7 @@
 		"vscode-languageserver-textdocument": "^1.0.1"
 	},
 	"scripts": {
-	    "antlr4ts": "antlr4ts -o src/parser -Xexact-output-dir grammar/KotlinParser.g4 grammar/KotlinLexer.g4",
+	    "antlr4ts": "antlr4ts -o src/parser -Xexact-output-dir -visitor grammar/KotlinParser.g4 grammar/KotlinLexer.g4",
 	    "build": "npm run antlr4ts && tsc -b",
 	    "test": "mocha -r ts-node/register tests/**/*.test.ts"
 	},

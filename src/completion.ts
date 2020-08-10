@@ -1,11 +1,16 @@
 import {KotlinLexer} from "./parser/KotlinLexer";
 import {CharStreams, CommonTokenStream} from "antlr4ts";
 import {KotlinParser} from "./parser/KotlinParser";
-import {CodeCompletionCore} from "antlr4-c3";
+import {CandidatesCollection, CodeCompletionCore, SymbolTable, VariableSymbol} from "antlr4-c3";
 import {ParseTree} from "antlr4ts/tree";
+import {SymbolTableVisitor} from "./symbol-table-visitor";
 
 export type Position = { line: number, column: number };
 export type ComputeTokenIndexFunction = (parseTree: ParseTree, caretPosition: Position) => number;
+
+function suggestVariables(symbolTable: SymbolTable) {
+    return symbolTable.getSymbolsOfType(VariableSymbol).map(s => s.name);
+}
 
 export function getSuggestions(code: string, caretPosition: Position, computeTokenIndex: ComputeTokenIndexFunction) {
     let input = CharStreams.fromString(code);
@@ -31,7 +36,8 @@ export function getSuggestions(code: string, caretPosition: Position, computeTok
 
     let completions = [];
     if(candidates.rules.has(KotlinParser.RULE_variableRead)) {
-        completions.push(...suggestIdentifiers());
+        let symbolTable = new SymbolTableVisitor().visit(parseTree);
+        completions.push(...suggestVariables(symbolTable));
     }
     candidates.tokens.forEach((_, k) => {
         if(k == KotlinParser.Identifier) {

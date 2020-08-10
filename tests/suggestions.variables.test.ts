@@ -11,7 +11,7 @@ describe('Local variables', function() {
     val z = 
 }`;
             let suggestions = getSuggestions(code, { line: 3, column: 13 }, computeTokenIndex);
-            expect(suggestions.length).to.equal(22);
-            expect(suggestions.find(s => s == "v")).to.eq(true);
+            expect(suggestions.indexOf("v")).to.not.equal(-1);
+            expect(suggestions.indexOf("some random name")).to.equal(-1);
         });
 });
