@@ -12,6 +12,6 @@ describe('Token index', function() {
     } 
 }`;
             let suggestions = getSuggestions(code, { line: 4, column: 7 }, computeTokenIndex);
-            expect(suggestions.length).to.equal(16);
+            expect(suggestions.length).to.equal(51);
         });
 });

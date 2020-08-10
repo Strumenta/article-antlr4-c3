@@ -18,14 +18,19 @@ export function getSuggestions(code: string, caretPosition: Position, computeTok
     let core = new CodeCompletionCore(parser);
     // Luckily, the Kotlin lexer defines all keywords and identifiers after operators,
     // so we can simply exclude the first non-keyword tokens
-    let ignored = Array.from(Array(KotlinParser.RETURN_AT).keys());
+    let ignored = Array.from(Array(KotlinParser.FILE).keys());
+    ignored.push(
+        KotlinParser.BinLiteral, KotlinParser.BooleanLiteral, KotlinParser.CharacterLiteral, KotlinParser.DoubleLiteral,
+        KotlinParser.HexLiteral, KotlinParser.IntegerLiteral, KotlinParser.LongLiteral, KotlinParser.NullLiteral,
+        KotlinParser.RealLiteral);
+    ignored.push(KotlinParser.QUOTE_OPEN, KotlinParser.QUOTE_CLOSE, KotlinParser.TRIPLE_QUOTE_OPEN)
     ignored.push(KotlinParser.LabelDefinition, KotlinParser.LabelReference); //We don't handle labels for simplicity
     core.ignoredTokens = new Set(ignored);
-    core.preferredRules = new Set([ KotlinParser.RULE_simpleIdentifier ]);
+    core.preferredRules = new Set([ KotlinParser.RULE_variableRead ]);
     let candidates = core.collectCandidates(index);
 
     let completions = [];
-    if(candidates.rules.has(KotlinParser.RULE_simpleIdentifier)) {
+    if(candidates.rules.has(KotlinParser.RULE_variableRead)) {
         completions.push(...suggestIdentifiers());
     }
     candidates.tokens.forEach((_, k) => {
