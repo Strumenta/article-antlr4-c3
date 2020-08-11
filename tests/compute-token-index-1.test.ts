@@ -2,7 +2,7 @@ import {expect} from "chai";
 import {CharStreams, CommonTokenStream} from "antlr4ts";
 import {KotlinLexer} from "../src/parser/KotlinLexer";
 import {KotlinParser} from "../src/parser/KotlinParser";
-import {computeTokenIndex} from "../src/compute-token-index-1";
+import {computeTokenPosition} from "../src/compute-token-position-1";
 
 describe('Token index', function() {
     it("is computed correctly",
@@ -18,6 +18,6 @@ describe('Token index', function() {
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            expect(computeTokenIndex(parseTree, { line: 4, column: 7 })).to.equal(14);
+            expect(computeTokenPosition(parseTree, { line: 4, column: 7 })).to.equal(14);
         });
 });

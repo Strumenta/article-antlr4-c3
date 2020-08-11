@@ -1,7 +1,7 @@
 import {expect} from "chai";
 
 import {getSuggestions} from "../src/completion";
-import {computeTokenIndex} from "../src/compute-token-index-1";
+import {computeTokenPosition} from "../src/compute-token-position-1";
 
 describe('Token index', function() {
     it("is computed correctly",
@@ -11,7 +11,7 @@ describe('Token index', function() {
         doSomething()
     } 
 }`;
-            let suggestions = getSuggestions(code, { line: 4, column: 7 }, computeTokenIndex);
+            let suggestions = getSuggestions(code, { line: 4, column: 7 }, computeTokenPosition);
             expect(suggestions.length).to.equal(51);
         });
 });
