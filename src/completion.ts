@@ -41,7 +41,11 @@ function suggestVariables(symbolTable: SymbolTable, context: ParseTree) {
     } else { //Global scope
         symbols = symbolTable.getSymbolsOfType(VariableSymbol);
     }
-    return symbols.map(s => s.name);
+    let names = symbols.map(s => s.name);
+    if(context.text.trim().length > 0) {
+        names = names.filter(n => n.toLowerCase().startsWith(context.text.toLowerCase()));
+    }
+    return names;
 }
 
 export function getSuggestions(code: string, caretPosition: Position, computeTokenPosition: ComputeTokenPositionFunction) {

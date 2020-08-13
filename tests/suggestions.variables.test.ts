@@ -31,6 +31,19 @@ fun test2() {
             expect(suggestions.indexOf("v")).to.not.equal(-1);
             expect(suggestions.indexOf("k")).to.equal(-1);
         });
+
+    it("are suggested with partial identifier filtering",
+        function() {
+            const code =
+`fun test() {
+    val someVariable = 1
+    val anotherVariable = 2
+    val z = so
+}`;
+            let suggestions = getSuggestions(code, { line: 4, column: 14 }, computeTokenPosition1);
+            expect(suggestions.indexOf("someVariable")).to.not.equal(-1);
+            expect(suggestions.indexOf("anotherVariable")).to.equal(-1);
+        });
 });
 describe('Global variables', function() {
     it("are suggested",

@@ -354,8 +354,8 @@ prefixUnaryExpression
     ;
 
 postfixUnaryExpression
-    : variableRead postfixUnaryOperation*
-    | (atomicExpression | callableReference) (postfixUnaryOperation | callSuffix)*
+    : (variableRead | atomicExpression) postfixUnaryOperation*
+    | (simpleIdentifier | callableReference | atomicExpression) (postfixUnaryOperation | callSuffix)*
     ;
 
 variableRead: simpleIdentifier;
@@ -372,7 +372,6 @@ atomicExpression
     | jumpExpression
     | loopExpression
     | collectionLiteral
-    | simpleIdentifier
     ;
 
 parenthesizedExpression
