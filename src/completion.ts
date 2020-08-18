@@ -5,9 +5,7 @@ import {CodeCompletionCore, ScopedSymbol, SymbolTable, VariableSymbol} from "ant
 import {ParseTree} from "antlr4ts/tree";
 import {SymbolTableVisitor} from "./symbol-table-visitor";
 import {Symbol} from "antlr4-c3/out/src/SymbolTable";
-
-export type Position = { line: number, column: number };
-export type ComputeTokenPositionFunction = (parseTree: ParseTree, caretPosition: Position) => { index: number, context: ParseTree };
+import {CaretPosition, ComputeTokenPositionFunction, TokenPosition} from "./types";
 
 function getScope(context: ParseTree, symbolTable: SymbolTable) {
     if(!context) {
@@ -33,7 +31,8 @@ function getAllSymbolsOfType<T extends Symbol>(scope: ScopedSymbol, type: new (.
     return symbols;
 }
 
-function suggestVariables(symbolTable: SymbolTable, context: ParseTree) {
+function suggestVariables(symbolTable: SymbolTable, position: TokenPosition) {
+    const context = position.context;
     const scope = getScope(context, symbolTable);
     let symbols: Symbol[];
     if(scope instanceof ScopedSymbol) { //Local scope
@@ -41,14 +40,22 @@ function suggestVariables(symbolTable: SymbolTable, context: ParseTree) {
     } else { //Global scope
         symbols = symbolTable.getSymbolsOfType(VariableSymbol);
     }
-    let names = symbols.map(s => s.name);
-    if(context.text.trim().length > 0) {
-        names = names.filter(n => n.toLowerCase().startsWith(context.text.toLowerCase()));
-    }
+    let names = symbols.map(s => s.name).filter(n => tokenMatches(n, position));
     return names;
 }
 
-export function getSuggestions(code: string, caretPosition: Position, computeTokenPosition: ComputeTokenPositionFunction) {
+function tokenMatches(completion: string, position: TokenPosition) {
+    return position.text.trim().length == 0 || completion.toLowerCase().startsWith(position.text.toLowerCase());
+}
+
+function maybeSuggest(completion: string, position: TokenPosition, completions: any[]) {
+    if (tokenMatches(completion, position)) {
+        completions.push(completion);
+    }
+}
+
+export function getSuggestions(
+    code: string, caretPosition: CaretPosition, computeTokenPosition: ComputeTokenPositionFunction) {
     let input = CharStreams.fromString(code);
     let lexer = new KotlinLexer(input);
     let parser = new KotlinParser(new CommonTokenStream(lexer));
@@ -76,17 +83,21 @@ export function getSuggestions(code: string, caretPosition: Position, computeTok
     let completions = [];
     if(candidates.rules.has(KotlinParser.RULE_variableRead)) {
         let symbolTable = new SymbolTableVisitor().visit(parseTree);
-        completions.push(...suggestVariables(symbolTable, position.context));
+        completions.push(...suggestVariables(symbolTable, position));
     }
     candidates.tokens.forEach((_, k) => {
+        let candidate;
         if(k == KotlinParser.Identifier) {
             //Skip, we’ve already handled it above
         } else if(k == KotlinParser.NOT_IN) {
-            completions.push("!in");
+            candidate = "!in";
         } else if(k == KotlinParser.NOT_IS) {
-            completions.push("!is");
+            candidate = "!is";
         } else {
-            completions.push(parser.vocabulary.getDisplayName(k));
+            candidate = parser.vocabulary.getSymbolicName(k).toLowerCase();
+        }
+        if(candidate) {
+            maybeSuggest(candidate, position, completions);
         }
 
     });

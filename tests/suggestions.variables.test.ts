@@ -1,7 +1,7 @@
 import {expect} from "chai";
 
 import {getSuggestions} from "../src/completion";
-import {computeTokenPosition as computeTokenPosition1} from "../src/compute-token-position-1";
+import {computeTokenPosition as computeTokenPosition1} from "../src/compute-token-position-simple";
 
 describe('Local variables', function() {
     it("are suggested",
@@ -32,7 +32,7 @@ fun test2() {
             expect(suggestions.indexOf("k")).to.equal(-1);
         });
 
-    it("are suggested with partial identifier filtering",
+    it("are suggested with partial match",
         function() {
             const code =
 `fun test() {
