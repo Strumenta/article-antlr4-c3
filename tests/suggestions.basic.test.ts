@@ -1,9 +1,9 @@
 import {expect} from "chai";
 
-import {getSuggestions} from "../src/completion";
+import {getSuggestions, setTokenMatcher, tokenMatches, tokenMatches_fuzzy} from "../src/completion";
 import {computeTokenPosition} from "../src/compute-token-position-simple";
 
-describe('Keywords', function() {
+const suite = function() {
     it("are suggested",
         function() {
             const code = `fun test() {
@@ -22,6 +22,14 @@ describe('Keywords', function() {
     } ca
 }`;
             let suggestions = getSuggestions(code, { line: 4, column: 8 }, computeTokenPosition);
-            expect(suggestions.length).to.equal(1);
+            expect(suggestions.indexOf('catch')).to.be.greaterThan(-1);
         });
+};
+
+describe('Keywords', suite);
+describe('Keywords w/fuzzy completion', function() {
+    let oldMatcher = tokenMatches;
+    beforeEach(() => setTokenMatcher(tokenMatches_fuzzy));
+    suite();
+    afterEach(() => setTokenMatcher(oldMatcher));
 });

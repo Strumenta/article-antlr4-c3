@@ -6,6 +6,7 @@ import {ParseTree} from "antlr4ts/tree";
 import {SymbolTableVisitor} from "./symbol-table-visitor";
 import {Symbol} from "antlr4-c3/out/src/SymbolTable";
 import {CaretPosition, ComputeTokenPositionFunction, TokenPosition} from "./types";
+import * as fuzzysort from 'fuzzysort';
 
 function getScope(context: ParseTree, symbolTable: SymbolTable) {
     if(!context) {
@@ -40,12 +41,21 @@ function suggestVariables(symbolTable: SymbolTable, position: TokenPosition) {
     } else { //Global scope
         symbols = symbolTable.getSymbolsOfType(VariableSymbol);
     }
-    let names = symbols.map(s => s.name).filter(n => tokenMatches(n, position));
-    return names;
+    return symbols.map(s => s.name).filter(n => tokenMatches(n, position));
 }
 
-function tokenMatches(completion: string, position: TokenPosition) {
-    return position.text.trim().length == 0 || completion.toLowerCase().startsWith(position.text.toLowerCase());
+export function tokenMatches_startsWith(completion: string, position: TokenPosition) {
+    return position.text.trim().length == 0 ||
+           completion.toLowerCase().startsWith(position.text.toLowerCase());
+}
+
+export function tokenMatches_fuzzy(completion: string, position: TokenPosition) {
+    return position.text.trim().length == 0 || fuzzysort.go(position.text, [completion]).length > 0;
+}
+
+export let tokenMatches = tokenMatches_startsWith;
+export function setTokenMatcher(fn) {
+    tokenMatches = fn;
 }
 
 function maybeSuggest(completion: string, position: TokenPosition, completions: any[]) {
@@ -99,7 +109,6 @@ export function getSuggestions(
         if(candidate) {
             maybeSuggest(candidate, position, completions);
         }
-
     });
     return completions;
 
