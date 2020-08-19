@@ -41,27 +41,28 @@ function suggestVariables(symbolTable: SymbolTable, position: TokenPosition) {
     } else { //Global scope
         symbols = symbolTable.getSymbolsOfType(VariableSymbol);
     }
-    return symbols.map(s => s.name).filter(n => tokenMatches(n, position));
+    return filterTokens(position, symbols.map(s => s.name));
 }
 
-export function tokenMatches_startsWith(completion: string, position: TokenPosition) {
-    return position.text.trim().length == 0 ||
-           completion.toLowerCase().startsWith(position.text.toLowerCase());
-}
-
-export function tokenMatches_fuzzy(completion: string, position: TokenPosition) {
-    return position.text.trim().length == 0 || fuzzysort.go(position.text, [completion]).length > 0;
-}
-
-export let tokenMatches = tokenMatches_startsWith;
-export function setTokenMatcher(fn) {
-    tokenMatches = fn;
-}
-
-function maybeSuggest(completion: string, position: TokenPosition, completions: any[]) {
-    if (tokenMatches(completion, position)) {
-        completions.push(completion);
+export function filterTokens_startsWith(position: TokenPosition, candidates: string[]) {
+    if(position.text.trim().length == 0) {
+        return candidates;
+    } else {
+        return candidates.filter(c => c.toLowerCase().startsWith(position.text.toLowerCase()));
     }
+}
+
+export function filterTokens_fuzzySearch(position: TokenPosition, candidates: string[]) {
+    if(position.text.trim().length == 0) {
+        return candidates;
+    } else {
+        return fuzzysort.go(position.text, candidates).map(r => r.target);
+    }
+}
+
+export let filterTokens = filterTokens_startsWith;
+export function setTokenMatcher(fn) {
+    filterTokens = fn;
 }
 
 export function getSuggestions(
@@ -95,21 +96,19 @@ export function getSuggestions(
         let symbolTable = new SymbolTableVisitor().visit(parseTree);
         completions.push(...suggestVariables(symbolTable, position));
     }
+    let tokens = [];
     candidates.tokens.forEach((_, k) => {
-        let candidate;
         if(k == KotlinParser.Identifier) {
             //Skip, we’ve already handled it above
         } else if(k == KotlinParser.NOT_IN) {
-            candidate = "!in";
+            tokens.push("!in");
         } else if(k == KotlinParser.NOT_IS) {
-            candidate = "!is";
+            tokens.push("!is");
         } else {
-            candidate = parser.vocabulary.getSymbolicName(k).toLowerCase();
-        }
-        if(candidate) {
-            maybeSuggest(candidate, position, completions);
+            tokens.push(parser.vocabulary.getSymbolicName(k).toLowerCase());
         }
     });
+    completions.push(...filterTokens(position, tokens));
     return completions;
 
 }

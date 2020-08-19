@@ -1,6 +1,6 @@
 import {expect} from "chai";
 
-import {getSuggestions, setTokenMatcher, tokenMatches, tokenMatches_fuzzy} from "../src/completion";
+import {getSuggestions, setTokenMatcher, filterTokens, filterTokens_fuzzySearch} from "../src/completion";
 import {computeTokenPosition as computeTokenPosition1} from "../src/compute-token-position-simple";
 import {it} from "mocha";
 
@@ -49,8 +49,8 @@ fun test2() {
 describe('Local variables', localVariablesSuite);
 
 describe('Local variables w/fuzzy search', function() {
-    let oldMatcher = tokenMatches;
-    beforeEach(() => setTokenMatcher(tokenMatches_fuzzy));
+    let oldMatcher = filterTokens;
+    beforeEach(() => setTokenMatcher(filterTokens_fuzzySearch));
     localVariablesSuite();
     it("are suggested with fuzzy match",
         function() {
