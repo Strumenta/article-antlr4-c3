@@ -393,8 +393,10 @@ arrayAccess
     ;
 
 valueArguments
-    : LPAREN (valueArgument (COMMA valueArgument)*)? RPAREN
+    : LPAREN (suggestArgument valueArgument (COMMA suggestArgument valueArgument)*)? RPAREN
     ;
+
+suggestArgument: /* Placeholder for code completion */;
 
 typeArguments
     : LANGLE NL* typeProjection (NL* COMMA typeProjection)* NL* RANGLE

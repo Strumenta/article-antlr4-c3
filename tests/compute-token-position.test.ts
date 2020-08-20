@@ -21,7 +21,7 @@ describe('Token position', function() {
             expect(input.index).to.equal(input.size);
             const tokenPosition = computeTokenPositionSimple(parseTree, { line: 4, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
-            expect(tokenPosition.index).to.equal(14);
+            expect(tokenPosition.index).to.equal(34);
         });
     it("includes partial text match ('fun' keyword)",
         function() {
@@ -46,7 +46,7 @@ describe('Token position', function() {
             expect(input.index).to.equal(input.size);
             const tokenPosition = computeTokenPositionSimple(parseTree, { line: 1, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
-            expect(tokenPosition.index).to.equal(1);
+            expect(tokenPosition.index).to.equal(2);
             expect(tokenPosition.text).to.equal("tes");
         });
 });

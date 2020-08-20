@@ -1,8 +1,8 @@
 import {KotlinLexer} from "./parser/KotlinLexer";
 import {CharStreams, CommonTokenStream} from "antlr4ts";
-import {KotlinParser} from "./parser/KotlinParser";
+import {KotlinParser, VariableReadContext} from "./parser/KotlinParser";
 import {CodeCompletionCore, ScopedSymbol, SymbolTable, VariableSymbol} from "antlr4-c3";
-import {ParseTree} from "antlr4ts/tree";
+import {ParseTree, TerminalNode} from "antlr4ts/tree";
 import {SymbolTableVisitor} from "./symbol-table-visitor";
 import {Symbol} from "antlr4-c3/out/src/SymbolTable";
 import {CaretPosition, ComputeTokenPositionFunction, TokenPosition} from "./types";
@@ -41,22 +41,26 @@ function suggestVariables(symbolTable: SymbolTable, position: TokenPosition) {
     } else { //Global scope
         symbols = symbolTable.getSymbolsOfType(VariableSymbol);
     }
-    return filterTokens(position, symbols.map(s => s.name));
+    let variable = position.context;
+    while(!(variable instanceof VariableReadContext) && variable.parent) {
+        variable = variable.parent;
+    }
+    return filterTokens(variable ? position.text : '', symbols.map(s => s.name));
 }
 
-export function filterTokens_startsWith(position: TokenPosition, candidates: string[]) {
-    if(position.text.trim().length == 0) {
+export function filterTokens_startsWith(text: string, candidates: string[]) {
+    if(text.trim().length == 0) {
         return candidates;
     } else {
-        return candidates.filter(c => c.toLowerCase().startsWith(position.text.toLowerCase()));
+        return candidates.filter(c => c.toLowerCase().startsWith(text.toLowerCase()));
     }
 }
 
-export function filterTokens_fuzzySearch(position: TokenPosition, candidates: string[]) {
-    if(position.text.trim().length == 0) {
+export function filterTokens_fuzzySearch(text: string, candidates: string[]) {
+    if(text.trim().length == 0) {
         return candidates;
     } else {
-        return fuzzysort.go(position.text, candidates).map(r => r.target);
+        return fuzzysort.go(text, candidates).map(r => r.target);
     }
 }
 
@@ -84,15 +88,17 @@ export function getSuggestions(
     ignored.push(
         KotlinParser.BinLiteral, KotlinParser.BooleanLiteral, KotlinParser.CharacterLiteral, KotlinParser.DoubleLiteral,
         KotlinParser.HexLiteral, KotlinParser.IntegerLiteral, KotlinParser.LongLiteral, KotlinParser.NullLiteral,
-        KotlinParser.RealLiteral);
+        KotlinParser.RealLiteral,
+        KotlinParser.DelimitedComment, KotlinParser.LineComment);
     ignored.push(KotlinParser.QUOTE_OPEN, KotlinParser.QUOTE_CLOSE, KotlinParser.TRIPLE_QUOTE_OPEN)
     ignored.push(KotlinParser.LabelDefinition, KotlinParser.LabelReference); //We don't handle labels for simplicity
     core.ignoredTokens = new Set(ignored);
-    core.preferredRules = new Set([ KotlinParser.RULE_variableRead ]);
+    core.preferredRules = new Set([ KotlinParser.RULE_variableRead, KotlinParser.RULE_suggestArgument ]);
     let candidates = core.collectCandidates(position.index);
 
     let completions = [];
-    if(candidates.rules.has(KotlinParser.RULE_variableRead)) {
+    if(candidates.rules.has(KotlinParser.RULE_variableRead) ||
+       candidates.rules.has(KotlinParser.RULE_suggestArgument)) {
         let symbolTable = new SymbolTableVisitor().visit(parseTree);
         completions.push(...suggestVariables(symbolTable, position));
     }
@@ -105,10 +111,17 @@ export function getSuggestions(
         } else if(k == KotlinParser.NOT_IS) {
             tokens.push("!is");
         } else {
-            tokens.push(parser.vocabulary.getSymbolicName(k).toLowerCase());
+            const symbolicName = parser.vocabulary.getSymbolicName(k);
+            if(symbolicName) {
+                tokens.push(symbolicName.toLowerCase());
+            }
         }
     });
-    completions.push(...filterTokens(position, tokens));
+    const isIgnoredToken =
+        position.context instanceof TerminalNode &&
+        ignored.indexOf(position.context.symbol.type) >= 0;
+    const textToMatch = isIgnoredToken ? '' : position.text;
+    completions.push(...filterTokens(textToMatch, tokens));
     return completions;
 
 }

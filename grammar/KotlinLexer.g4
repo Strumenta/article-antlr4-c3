@@ -31,7 +31,7 @@ LineComment
 
 WS
     : [\u0020\u0009\u000C]
-      -> skip
+      -> channel(HIDDEN)
     ;
 
 NL: '\u000A' | '\u000D' '\u000A' ;
@@ -455,8 +455,8 @@ Inside_Identifier: Identifier -> type(Identifier) ;
 Inside_LabelReference: LabelReference -> type(LabelReference) ;
 Inside_LabelDefinition: LabelDefinition -> type(LabelDefinition) ;
 Inside_Comment: (LineComment | DelimitedComment) -> channel(HIDDEN) ;
-Inside_WS: WS -> skip ;
-Inside_NL: NL -> skip ;
+Inside_WS: WS -> channel(HIDDEN) ;
+Inside_NL: NL -> channel(HIDDEN) ;
 
 
 mode LineString ;
@@ -509,7 +509,7 @@ MultiLineStrExprStart
     : '${' -> pushMode(StringExpression)
     ;
 
-MultiLineNL: NL -> skip ;
+MultiLineNL: NL -> channel(HIDDEN) ;
 
 
 mode StringExpression ;
@@ -583,5 +583,5 @@ StrExpr_Identifier: Identifier -> type(Identifier) ;
 StrExpr_LabelReference: LabelReference -> type(LabelReference) ;
 StrExpr_LabelDefinition: LabelDefinition -> type(LabelDefinition) ;
 StrExpr_Comment: (LineComment | DelimitedComment) -> channel(HIDDEN) ;
-StrExpr_WS: WS -> skip ;
-StrExpr_NL: NL -> skip ;
+StrExpr_WS: WS -> channel(HIDDEN) ;
+StrExpr_NL: NL -> channel(HIDDEN) ;
