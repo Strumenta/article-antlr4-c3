@@ -69,16 +69,11 @@ export function setTokenMatcher(fn) {
     filterTokens = fn;
 }
 
-export function getSuggestions(
-    code: string, caretPosition: CaretPosition, computeTokenPosition: ComputeTokenPositionFunction) {
-    let input = CharStreams.fromString(code);
-    let lexer = new KotlinLexer(input);
-    let parser = new KotlinParser(new CommonTokenStream(lexer));
-
-    let parseTree = parser.kotlinFile();
-
+function getSuggestionsForParseTree(
+    parser: KotlinParser, parseTree: ParseTree, caretPosition: CaretPosition,
+    computeTokenPosition: ComputeTokenPositionFunction) {
     let position = computeTokenPosition(parseTree, caretPosition);
-    if(!position) {
+    if (!position) {
         return [];
     }
     let core = new CodeCompletionCore(parser);
@@ -93,26 +88,26 @@ export function getSuggestions(
     ignored.push(KotlinParser.QUOTE_OPEN, KotlinParser.QUOTE_CLOSE, KotlinParser.TRIPLE_QUOTE_OPEN)
     ignored.push(KotlinParser.LabelDefinition, KotlinParser.LabelReference); //We don't handle labels for simplicity
     core.ignoredTokens = new Set(ignored);
-    core.preferredRules = new Set([ KotlinParser.RULE_variableRead, KotlinParser.RULE_suggestArgument ]);
+    core.preferredRules = new Set([KotlinParser.RULE_variableRead, KotlinParser.RULE_suggestArgument]);
     let candidates = core.collectCandidates(position.index);
 
     let completions = [];
-    if(candidates.rules.has(KotlinParser.RULE_variableRead) ||
-       candidates.rules.has(KotlinParser.RULE_suggestArgument)) {
+    if (candidates.rules.has(KotlinParser.RULE_variableRead) ||
+        candidates.rules.has(KotlinParser.RULE_suggestArgument)) {
         let symbolTable = new SymbolTableVisitor().visit(parseTree);
         completions.push(...suggestVariables(symbolTable, position));
     }
     let tokens = [];
     candidates.tokens.forEach((_, k) => {
-        if(k == KotlinParser.Identifier) {
+        if (k == KotlinParser.Identifier) {
             //Skip, we’ve already handled it above
-        } else if(k == KotlinParser.NOT_IN) {
+        } else if (k == KotlinParser.NOT_IN) {
             tokens.push("!in");
-        } else if(k == KotlinParser.NOT_IS) {
+        } else if (k == KotlinParser.NOT_IS) {
             tokens.push("!is");
         } else {
             const symbolicName = parser.vocabulary.getSymbolicName(k);
-            if(symbolicName) {
+            if (symbolicName) {
                 tokens.push(symbolicName.toLowerCase());
             }
         }
@@ -123,7 +118,17 @@ export function getSuggestions(
     const textToMatch = isIgnoredToken ? '' : position.text;
     completions.push(...filterTokens(textToMatch, tokens));
     return completions;
+}
 
+export function getSuggestions(
+    code: string, caretPosition: CaretPosition, computeTokenPosition: ComputeTokenPositionFunction) {
+    let input = CharStreams.fromString(code);
+    let lexer = new KotlinLexer(input);
+    let parser = new KotlinParser(new CommonTokenStream(lexer));
+
+    let parseTree = parser.kotlinFile();
+
+    return getSuggestionsForParseTree(parser, parseTree, caretPosition, computeTokenPosition);
 }
 
 function suggestIdentifiers(): any[] {

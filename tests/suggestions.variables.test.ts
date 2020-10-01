@@ -1,6 +1,6 @@
 import {expect} from "chai";
 
-import {getSuggestions, setTokenMatcher, filterTokens, filterTokens_fuzzySearch} from "../src/completion";
+import {getSuggestions, setTokenMatcher, filterTokens, filterTokens_fuzzySearch} from "../src";
 import {computeTokenPosition as computeTokenPosition1} from "../src/compute-token-position-simple";
 import {it} from "mocha";
 
