@@ -5,7 +5,7 @@ import {FunctionDeclarationContext, VariableDeclarationContext} from "./parser/K
 
 export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> implements KotlinParserVisitor<SymbolTable> {
     constructor(
-        protected readonly symbolTable: SymbolTable = new SymbolTable("", {}),
+        protected readonly symbolTable = new SymbolTable("", {}),
         protected scope = symbolTable.addNewSymbolOfType(ScopedSymbol, undefined)) {
         super();
     }

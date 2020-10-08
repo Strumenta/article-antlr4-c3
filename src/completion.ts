@@ -69,8 +69,8 @@ export function setTokenMatcher(fn) {
     filterTokens = fn;
 }
 
-function getSuggestionsForParseTree(
-    parser: KotlinParser, parseTree: ParseTree, caretPosition: CaretPosition,
+export function getSuggestionsForParseTree(
+    parser: KotlinParser, parseTree: ParseTree, symbolTableVisitor: SymbolTableVisitor, caretPosition: CaretPosition,
     computeTokenPosition: ComputeTokenPositionFunction) {
     let position = computeTokenPosition(parseTree, caretPosition);
     if (!position) {
@@ -94,7 +94,7 @@ function getSuggestionsForParseTree(
     let completions = [];
     if (candidates.rules.has(KotlinParser.RULE_variableRead) ||
         candidates.rules.has(KotlinParser.RULE_suggestArgument)) {
-        let symbolTable = new SymbolTableVisitor().visit(parseTree);
+        let symbolTable = symbolTableVisitor.visit(parseTree);
         completions.push(...suggestVariables(symbolTable, position));
     }
     let tokens = [];
@@ -128,7 +128,7 @@ export function getSuggestions(
 
     let parseTree = parser.kotlinFile();
 
-    return getSuggestionsForParseTree(parser, parseTree, caretPosition, computeTokenPosition);
+    return getSuggestionsForParseTree(parser, parseTree, new SymbolTableVisitor(), caretPosition, computeTokenPosition);
 }
 
 function suggestIdentifiers(): any[] {

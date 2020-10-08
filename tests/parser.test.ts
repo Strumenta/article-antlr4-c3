@@ -88,4 +88,18 @@ describe('variableRead rule refactoring', function() {
             expect(tree.simpleIdentifier()).not.to.be.undefined;
             expect(tree.simpleIdentifier().text).to.equal("f");
         });
+    it("parses import statements",
+        function() {
+            const code = `import foo
+            
+            fun bar() {}`;
+            let input = CharStreams.fromString(code);
+            let lexer = new KotlinLexer(input);
+            let parser = new KotlinParser(new CommonTokenStream(lexer));
+
+            const tree = parser.kotlinFile();
+            expect(parser.numberOfSyntaxErrors).to.equal(0);
+            expect(input.index).to.equal(input.size);
+            expect(tree.preamble().importList().importHeader().length).to.equal(1);
+        });
 });
