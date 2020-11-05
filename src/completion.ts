@@ -130,7 +130,3 @@ export function getSuggestions(
 
     return getSuggestionsForParseTree(parser, parseTree, new SymbolTableVisitor(), caretPosition, computeTokenPosition);
 }
-
-function suggestIdentifiers(): any[] {
-    return [];
-}
