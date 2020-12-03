@@ -72,7 +72,7 @@ export function setTokenMatcher(fn) {
 export function getSuggestionsForParseTree(
     parser: KotlinParser, parseTree: ParseTree, symbolTableVisitor: SymbolTableVisitor, caretPosition: CaretPosition,
     computeTokenPosition: ComputeTokenPositionFunction) {
-    let position = computeTokenPosition(parseTree, caretPosition);
+    let position = computeTokenPosition(parseTree, parser.inputStream, caretPosition);
     if (!position) {
         return [];
     }

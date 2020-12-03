@@ -1,7 +1,6 @@
 import {expect} from "chai";
 
-import { getSuggestions, setTokenMatcher, filterTokens, filterTokens_fuzzySearch } from "../src/completion";
-import {computeTokenPosition} from "../src/compute-token-position-simple";
+import { computeTokenPosition, getSuggestions, setTokenMatcher, filterTokens, filterTokens_fuzzySearch } from "../src";
 
 const suite = function() {
     it("are suggested",

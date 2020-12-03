@@ -15,11 +15,12 @@ describe('Token position', function() {
         function() {
             let input = CharStreams.fromString(code);
             let lexer = new KotlinLexer(input);
-            let parser = new KotlinParser(new CommonTokenStream(lexer));
+            let tokenStream = new CommonTokenStream(lexer);
+            let parser = new KotlinParser(tokenStream);
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, { line: 4, column: 7 });
+            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream,{ line: 4, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(34);
         });
@@ -27,11 +28,12 @@ describe('Token position', function() {
         function() {
             let input = CharStreams.fromString(code);
             let lexer = new KotlinLexer(input);
-            let parser = new KotlinParser(new CommonTokenStream(lexer));
+            let tokenStream = new CommonTokenStream(lexer);
+            let parser = new KotlinParser(tokenStream);
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, { line: 1, column: 2 });
+            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream, { line: 1, column: 2 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(0);
             expect(tokenPosition.text).to.equal("fu");
@@ -40,13 +42,31 @@ describe('Token position', function() {
         function() {
             let input = CharStreams.fromString(code);
             let lexer = new KotlinLexer(input);
-            let parser = new KotlinParser(new CommonTokenStream(lexer));
+            let tokenStream = new CommonTokenStream(lexer);
+            let parser = new KotlinParser(tokenStream);
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, { line: 1, column: 7 });
+            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream, { line: 1, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(2);
             expect(tokenPosition.text).to.equal("tes");
         });
+        it("is correctly computed even in stream with errors",
+            function() {
+                    let input = CharStreams.fromString(`fun test() {
+    for(i on foo) {
+        doSomething()
+    } 
+}`);
+                    let lexer = new KotlinLexer(input);
+                    let tokenStream = new CommonTokenStream(lexer);
+                    let parser = new KotlinParser(tokenStream);
+                    let parseTree = parser.kotlinFile();
+                    expect(parser.numberOfSyntaxErrors).to.equal(3);
+                    expect(input.index).to.equal(input.size);
+                    const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream,{ line: 4, column: 7 });
+                    expect(tokenPosition).to.not.be.undefined;
+                    expect(tokenPosition.index).to.equal(41);
+            });
 });

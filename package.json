@@ -1,7 +1,7 @@
 {
 	"name": "toy-kotlin-language-server",
 	"description": "Simple Language Server component for the Kotlin language, to demonstrate code completion with antlr4-c3.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"author": "Strumenta s.r.l.",
 	"license": "Apache",
 	"repository": {
