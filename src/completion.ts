@@ -70,12 +70,7 @@ export function setTokenMatcher(fn) {
 }
 
 export function getSuggestionsForParseTree(
-    parser: KotlinParser, parseTree: ParseTree, symbolTableVisitor: SymbolTableVisitor, caretPosition: CaretPosition,
-    computeTokenPosition: ComputeTokenPositionFunction) {
-    let position = computeTokenPosition(parseTree, parser.inputStream, caretPosition);
-    if (!position) {
-        return [];
-    }
+    parser: KotlinParser, parseTree: ParseTree, symbolTableFn: () => SymbolTable, position: TokenPosition) {
     let core = new CodeCompletionCore(parser);
     // Luckily, the Kotlin lexer defines all keywords and identifiers after operators,
     // so we can simply exclude the first non-keyword tokens
@@ -94,8 +89,7 @@ export function getSuggestionsForParseTree(
     let completions = [];
     if (candidates.rules.has(KotlinParser.RULE_variableRead) ||
         candidates.rules.has(KotlinParser.RULE_suggestArgument)) {
-        let symbolTable = symbolTableVisitor.visit(parseTree);
-        completions.push(...suggestVariables(symbolTable, position));
+        completions.push(...suggestVariables(symbolTableFn(), position));
     }
     let tokens = [];
     candidates.tokens.forEach((_, k) => {
@@ -124,9 +118,15 @@ export function getSuggestions(
     code: string, caretPosition: CaretPosition, computeTokenPosition: ComputeTokenPositionFunction) {
     let input = CharStreams.fromString(code);
     let lexer = new KotlinLexer(input);
-    let parser = new KotlinParser(new CommonTokenStream(lexer));
+    let tokenStream = new CommonTokenStream(lexer);
+    let parser = new KotlinParser(tokenStream);
 
     let parseTree = parser.kotlinFile();
 
-    return getSuggestionsForParseTree(parser, parseTree, new SymbolTableVisitor(), caretPosition, computeTokenPosition);
+    let position = computeTokenPosition(parseTree, tokenStream, caretPosition);
+    if(!position) {
+        return [];
+    }
+    return getSuggestionsForParseTree(
+        parser, parseTree, () => new SymbolTableVisitor().visit(parseTree), position);
 }
