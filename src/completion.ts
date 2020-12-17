@@ -8,7 +8,7 @@ import {Symbol} from "antlr4-c3/out/src/SymbolTable";
 import {CaretPosition, ComputeTokenPositionFunction, TokenPosition} from "./types";
 import * as fuzzysort from 'fuzzysort';
 
-function getScope(context: ParseTree, symbolTable: SymbolTable) {
+export function getScope(context: ParseTree, symbolTable: SymbolTable) {
     if(!context) {
         return undefined;
     }
@@ -20,7 +20,7 @@ function getScope(context: ParseTree, symbolTable: SymbolTable) {
     }
 }
 
-function getAllSymbolsOfType<T extends Symbol>(scope: ScopedSymbol, type: new (...args: any[]) => T): T[] {
+export function getAllSymbolsOfType<T extends Symbol>(scope: ScopedSymbol, type: new (...args: any[]) => T): T[] {
     let symbols = scope.getSymbolsOfType(type);
     let parent = scope.parent;
     while(parent && !(parent instanceof ScopedSymbol)) {

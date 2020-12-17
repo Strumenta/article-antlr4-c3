@@ -2,7 +2,7 @@ import {expect} from "chai";
 import {CharStreams, CommonTokenStream} from "antlr4ts";
 import {KotlinLexer} from "../src/parser/KotlinLexer";
 import {KotlinParser} from "../src/parser/KotlinParser";
-import {computeTokenPosition as computeTokenPositionSimple} from "../src/compute-token-position-simple";
+import {computeTokenPosition} from "../src/compute-token-position";
 
 describe('Token position', function() {
     const code =
@@ -20,7 +20,7 @@ describe('Token position', function() {
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream,{ line: 4, column: 7 });
+            const tokenPosition = computeTokenPosition(parseTree, tokenStream,{ line: 4, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(34);
         });
@@ -33,7 +33,7 @@ describe('Token position', function() {
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream, { line: 1, column: 2 });
+            const tokenPosition = computeTokenPosition(parseTree, tokenStream, { line: 1, column: 2 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(0);
             expect(tokenPosition.text).to.equal("fu");
@@ -47,7 +47,7 @@ describe('Token position', function() {
             let parseTree = parser.kotlinFile();
             expect(parser.numberOfSyntaxErrors).to.equal(0);
             expect(input.index).to.equal(input.size);
-            const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream, { line: 1, column: 7 });
+            const tokenPosition = computeTokenPosition(parseTree, tokenStream, { line: 1, column: 7 });
             expect(tokenPosition).to.not.be.undefined;
             expect(tokenPosition.index).to.equal(2);
             expect(tokenPosition.text).to.equal("tes");
@@ -65,7 +65,7 @@ describe('Token position', function() {
                     let parseTree = parser.kotlinFile();
                     expect(parser.numberOfSyntaxErrors).to.equal(3);
                     expect(input.index).to.equal(input.size);
-                    const tokenPosition = computeTokenPositionSimple(parseTree, tokenStream,{ line: 4, column: 7 });
+                    const tokenPosition = computeTokenPosition(parseTree, tokenStream,{ line: 4, column: 7 });
                     expect(tokenPosition).to.not.be.undefined;
                     expect(tokenPosition.index).to.equal(41);
             });
